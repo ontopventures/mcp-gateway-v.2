@@ -50,10 +50,19 @@ class MCPServer {
     ) {}
 }
 
-// We’ll store session info and track timeouts
+// We'll store session info and track timeouts
 interface SessionData {
   serverProcess: StdioClientTransport;
   lastActive: number; // timestamp of last request
+}
+
+// Helper function to interpolate environment variables in strings
+function interpolateEnvVars(str: string): string {
+  // Replace ${VAR_NAME} or $VAR_NAME patterns with actual env values
+  return str.replace(/\$\{([^}]+)\}|\$([A-Z_][A-Z0-9_]*)/g, (match, bracedVar, unbracedVar) => {
+    const varName = bracedVar || unbracedVar;
+    return process.env[varName] || match; // Keep original if env var not found
+  });
 }
 
 const SESSION_TIMEOUT_MS = 10 * 60_000; // 10 minutes
@@ -84,9 +93,12 @@ async function getOrCreateSession(sessionId: string, serverName: string, config:
   }
 
   // Otherwise, create a new STDIO transport
+  // Interpolate environment variables in args
+  const interpolatedArgs = config.args.map(arg => interpolateEnvVars(arg));
+  
   const stdioTransport = new StdioClientTransport({
     command: config.command,
-    args: config.args,
+    args: interpolatedArgs,
     env: process.env as Record<string, string>
   });
 
@@ -204,9 +216,12 @@ class MCPGateway {
 
         try {
           const serverConfig = this.config.servers[serverName];
+          // Interpolate environment variables in args
+          const interpolatedArgs = serverConfig.args.map(arg => interpolateEnvVars(arg));
+          
           const stdioTransport = new StdioClientTransport({
             command: serverConfig.command,
-            args: serverConfig.args,
+            args: interpolatedArgs,
             env: process.env as Record<string, string>,
           });
 
@@ -440,9 +455,12 @@ async function dumpSchemas(config: GatewayConfig, format: 'json' | 'yaml') {
     // console.log("Dumping tools for server:", serverName);
 
     // Spin up a temporary session, get tools
+    // Interpolate environment variables in args
+    const interpolatedArgs = serverConfig.args.map(arg => interpolateEnvVars(arg));
+    
     const stdio = new StdioClientTransport({
       command: serverConfig.command,
-      args: serverConfig.args,
+      args: interpolatedArgs,
       env: process.env as Record<string, string>
     });
     await stdio.start();

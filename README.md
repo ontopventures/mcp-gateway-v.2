@@ -253,6 +253,56 @@ servers:
       # Add any server-specific arguments here
 ```
 
+### Example: Supabase MCP Server
+
+The Supabase MCP server is already configured in the example `config.yaml`. To use it:
+
+1. Get your Supabase personal access token from [Supabase Dashboard](https://supabase.com/dashboard/account/tokens)
+2. Get your project reference from your Supabase project settings
+3. Set the required environment variables:
+```bash
+export SUPABASE_ACCESS_TOKEN="your-token-here"
+export SUPABASE_PROJECT_REF="your-project-ref"
+```
+4. Start the gateway:
+```bash
+npm start
+```
+
+The configuration in `config.yaml` uses environment variable interpolation:
+```yaml
+supabase:
+  command: npx
+  args:
+    - -y
+    - "@supabase/mcp-server-supabase@latest"
+    - "--read-only"  # Optional: runs in read-only mode for safety
+    - "--project-ref=${SUPABASE_PROJECT_REF}"
+```
+
+The Supabase server will be available at:
+- SSE endpoint: `http://localhost:3000/supabase`
+- REST API: `http://localhost:3000/api/supabase/{toolName}?sessionId={session-id}`
+
+For a full list of available Supabase MCP tools, see the [Supabase MCP documentation](https://github.com/supabase-community/supabase-mcp).
+
+### Environment Variable Interpolation
+
+The gateway supports environment variable interpolation in server arguments. You can use either `${VAR_NAME}` or `$VAR_NAME` syntax:
+
+```yaml
+servers:
+  myserver:
+    command: npx
+    args:
+      - -y
+      - "@some/mcp-server"
+      - "--api-key=${MY_API_KEY}"
+      - "--host=$MY_HOST"
+```
+
+This allows you to keep sensitive credentials out of your configuration files and makes it easier to deploy across different environments.
+
 ## Architecture
 
 The gateway creates a unique session for each server instance, allowing multiple clients to use the same server type independently. Each session maintains its own:
@@ -266,6 +316,10 @@ When a client disconnects, all associated resources are automatically cleaned up
 ## Environment Variables
 
 - `CONFIG_PATH`: Path to the YAML configuration file (default: `./config.yaml`)
+- `SUPABASE_ACCESS_TOKEN`: Your Supabase personal access token (required for Supabase MCP server)
+- `SUPABASE_PROJECT_REF`: Your Supabase project reference (required for Supabase MCP server)
+
+You can set these in your shell or create a `.env` file (make sure to add it to `.gitignore`).
 
 ## Contributing
 
