@@ -3,7 +3,7 @@ port: 3000
 
 # Debug configuration (optional)
 debug:
-  level: "info"  # Possible values: "error", "warn", "info", "debug", "verbose"
+  level: "debug"  # Possible values: "error", "warn", "info", "debug", "verbose"
 
 # Authentication configuration (optional)
 # auth:
@@ -18,25 +18,6 @@ debug:
 #       - "your-secure-token"
 
 servers:
-  # run an MCP server with npx
-  filesystem:
-    command: npx
-    args:
-      - -y
-      - "@modelcontextprotocol/server-filesystem"
-      - "/home/aaron"
-
-  # run a an MCP server from local source
-  puppeteer:
-    command: tsx
-    args:
-      - "/home/aaron/AI/MCP-Servers/src/puppeteer/index.ts"
-
-  youtube:
-    command: tsx
-    args:
-      - "/home/aaron/AI/mcp-server-youtube-transcript/src/index.ts"
-
   # Supabase MCP Server
   # Requires SUPABASE_ACCESS_TOKEN and SUPABASE_PROJECT_REF environment variables
   # Get your access token from: https://supabase.com/dashboard/account/tokens
